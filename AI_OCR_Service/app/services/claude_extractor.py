@@ -1,15 +1,15 @@
 import os
 import requests
-
 import json
 from pydantic import ValidationError
 from app.models.schemas import PrescriptionExtracted
+from app.core.config import settings
 
 CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
 CLAUDE_MODEL = "claude-3-5-sonnet-20240620"
 
 def extract_structured_data(cleaned_text: str) -> dict:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = settings.ANTHROPIC_API_KEY
     if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not set")
 

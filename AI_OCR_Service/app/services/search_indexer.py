@@ -1,10 +1,9 @@
 from elasticsearch import Elasticsearch
-import os
+from app.core.config import settings
 
-ES_HOST = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
 ES_INDEX = "prescriptions"
 
-es = Elasticsearch(ES_HOST)
+es = Elasticsearch(settings.ELASTICSEARCH_HOST)
 
 def index_prescription(prescription_id: str, data: dict):
     document = {
