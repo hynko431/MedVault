@@ -51,11 +51,13 @@ def join_broken_words(text: str) -> str:
         i = 0
 
         while i < len(tokens):
+            # Check if current and next token are both uppercase and short (likely a split word)
             if (
                 i + 1 < len(tokens)
-                and tokens[i].isalpha()
-                and tokens[i + 1].isalpha()
+                and tokens[i].isupper()
+                and tokens[i + 1].isupper()
                 and len(tokens[i]) <= 4
+                and len(tokens[i+1]) <= 4
             ):
                 new_tokens.append(tokens[i] + tokens[i + 1])
                 i += 2

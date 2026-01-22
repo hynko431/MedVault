@@ -29,4 +29,5 @@ def extract_text_from_image(image_bytes: bytes) -> str:
         return texts[0].description
     
     except Exception as e:
+        # Log the error here if logging is configured
         raise OCRError(f"Vision OCR failed: {str(e)}")

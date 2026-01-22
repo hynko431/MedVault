@@ -63,19 +63,30 @@ PRESCRIPTION TEXT:
         ]
     }
 
-    response = requests.post(
-        CLAUDE_API_URL,
-        headers=headers,
-        json=payload,
-        timeout=30
-    )
-    response.raise_for_status()
+    try:
+        response = requests.post(
+            CLAUDE_API_URL,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+        response.raise_for_status()
 
-    result = response.json()
-    text_output = result["content"][0]["text"]
+        result = response.json()
+        text_output = result["content"][0]["text"]
 
-    parsed = json.loads(text_output)
-    return parsed
+        # Claude might wrap JSON in markdown blocks
+        if "```json" in text_output:
+            text_output = text_output.split("```json")[1].split("```")[0].strip()
+        elif "```" in text_output:
+            text_output = text_output.split("```")[1].split("```")[0].strip()
+
+        parsed = json.loads(text_output)
+        return parsed
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Claude API request failed: {str(e)}")
+    except (json.JSONDecodeError, KeyError, IndexError) as e:
+        raise RuntimeError(f"Failed to parse Claude response: {str(e)}")
 
 
 def validate_extracted_json(data: dict) -> PrescriptionExtracted:
