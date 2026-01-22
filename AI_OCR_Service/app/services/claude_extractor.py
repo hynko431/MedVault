@@ -84,7 +84,11 @@ PRESCRIPTION TEXT:
         parsed = json.loads(text_output)
         return parsed
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Claude API request failed: {str(e)}")
+        error_msg = f"Claude API request failed: {str(e)}"
+        if e.response is not None and e.response.status_code == 401:
+            masked_key = settings.get_masked_key("ANTHROPIC_API_KEY")
+            error_msg += f" (Key used: {masked_key}). Please verify your ANTHROPIC_API_KEY in the .env file."
+        raise RuntimeError(error_msg)
     except (json.JSONDecodeError, KeyError, IndexError) as e:
         raise RuntimeError(f"Failed to parse Claude response: {str(e)}")
 

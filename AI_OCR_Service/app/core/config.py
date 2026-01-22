@@ -18,4 +18,12 @@ class Settings:
     # Elasticsearch
     ELASTICSEARCH_HOST: str = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
 
+    def get_masked_key(self, key_name: str) -> str:
+        val = getattr(self, key_name, "")
+        if not val:
+            return "NOT SET"
+        if len(val) <= 8:
+            return "***"
+        return f"{val[:4]}...{val[-4:]}"
+
 settings = Settings()
