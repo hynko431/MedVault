@@ -10,9 +10,24 @@ def health_check():
         "status": "ok", 
         "service": "ai-ocr-search",
         "config": {
-            "anthropic_key_set": bool(settings.ANTHROPIC_API_KEY),
             "google_creds_set": bool(settings.GOOGLE_APPLICATION_CREDENTIALS),
-            "anthropic_key_preview": settings.get_masked_key("ANTHROPIC_API_KEY")
+            "providers": {
+                "anthropic": {
+                    "set": bool(settings.ANTHROPIC_API_KEY),
+                    "preview": settings.get_masked_key("ANTHROPIC_API_KEY"),
+                    "model": settings.ANTHROPIC_MODEL
+                },
+                "openrouter": {
+                    "set": bool(settings.OPENROUTER_API_KEY),
+                    "preview": settings.get_masked_key("OPENROUTER_API_KEY"),
+                    "model": settings.OPENROUTER_MODEL
+                },
+                "groq": {
+                    "set": bool(settings.GROQ_API_KEY),
+                    "preview": settings.get_masked_key("GROQ_API_KEY"),
+                    "model": settings.GROQ_MODEL
+                }
+            }
         }
     }
 
