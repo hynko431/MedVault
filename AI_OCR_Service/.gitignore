@@ -1,3 +1,11 @@
+# secrets / env
 .env
+.env.* 
 *.json
+
+# python
 __pycache__/
+*.pyc
+
+# editor
+.vscode/
