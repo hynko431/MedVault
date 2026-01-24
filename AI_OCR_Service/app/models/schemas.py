@@ -1,19 +1,42 @@
 from typing import List, Optional
-from pydantic import BaseModel, HttpUrl
+from datetime import date
+from pydantic import BaseModel, HttpUrl, Field
+
+class ConfidenceField(BaseModel):
+    value: Optional[str] = None
+    confidence: Optional[float] = None  # 0.0 → 1.0
+    raw_text: Optional[str] = None
 
 class OCRRequest(BaseModel):
     prescription_id: str
     image_url: HttpUrl
-    
+
 class Medicine(BaseModel):
-    name: Optional[str]
-    strength: Optional[str]
-    dosage: Optional[str]
-    frequency: Optional[str]
-    duration: Optional[str]
+    name: Optional[str] = None
+    dosage: Optional[str] = None
+    frequency: Optional[str] = None
+    duration: Optional[str] = None
+    instructions: Optional[str] = None
+
+    confidence: Optional[float] = None
+    raw_text: Optional[str] = None 
 
 
 class PrescriptionExtracted(BaseModel):
-    doctor_name: Optional[str]
-    hospital: Optional[str]
-    medicines: List[Medicine]
+    doctor_name: Optional[str] = None
+    hospital: Optional[str] = None
+    date: Optional[date] = None
+    patient_name: Optional[str] = None
+    diagnosis: Optional[str] = None
+
+    medicines: List[Medicine] = Field(default_factory=list)
+
+    tests_advised: List[str] = Field(default_factory=list)
+    follow_up: Optional[str] = None
+
+    overall_confidence: Optional[float] = None
+
+class OCRResponse(BaseModel):
+    prescription_id: str
+    status: str  # success | needs_review | failed
+    extracted_data: Optional[PrescriptionExtracted] = None
