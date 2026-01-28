@@ -21,19 +21,23 @@ class Settings:
     PROJECT_NAME: str = "AI OCR & Search Service"
     
     # Google Cloud Vision
-    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     
-    # Anthropic (Primary)
+    # Gemini (OCR Priority 1)
+    GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+    
+    # Anthropic (Extraction Priority 1)
     ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
     ANTHROPIC_MODEL: str = "claude-3-5-sonnet-20240620"
     
     # OpenRouter (Fallback 1)
     OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY")
-    OPENROUTER_MODEL: str = "google/gemma-3-27b-it:free"
+    OPENROUTER_MODEL: str = "anthropic/claude-sonnet-4.5"
     
     # Groq (Fallback 2)
     GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY")
-    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    GROQ_MODEL: str = "openai/gpt-oss-safeguard-20b"
     
     # Elasticsearch
     ELASTICSEARCH_HOST: str = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
