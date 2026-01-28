@@ -12,21 +12,20 @@ CLAUDE_MODEL = "claude-3-5-sonnet-20240620"
 
 def get_medicine_chat_prompt(question: str, context: dict | None = None) -> str:
     """Generate the prompt for medicine chat"""
-    prompt = f"""
-You are a medical information assistant.
-You DO NOT diagnose.
-You DO NOT give emergency advice.
+    return f"""
+        You are a medical information assistant.
+        You DO NOT diagnose.
+        You DO NOT give emergency advice.
 
-Rules:
-- Explain medicines in plain English
-- Mention common uses, side effects, precautions
-- Always include a disclaimer
-- If unsure, say you are unsure
+        Rules:
+        - Explain medicines in plain English
+        - Mention common uses, side effects, precautions
+        - Always include a disclaimer
+        - If unsure, say you are unsure
 
-Question:
-{question}
-"""
-    return prompt
+        Question:
+        {question}
+        """
 
 def try_anthropic(prompt: str) -> str:
     """Try Anthropic Claude API"""
@@ -137,32 +136,30 @@ def medicine_chat(question: str, context: dict | None = None) -> str:
     """
     prompt = get_medicine_chat_prompt(question, context)
     errors = []
-    
+
     # 1. Try Anthropic (Primary)
     try:
         return try_anthropic(prompt)
     except Exception as e:
-        err = f"Anthropic failed: {str(e)}"
-        logger.warning(err)
-        errors.append(err)
-    
+        _extracted_from_medicine_chat_24('Anthropic failed: ', e, errors)
     # 2. Try OpenRouter (Fallback 1)
     try:
         return try_openrouter(prompt)
     except Exception as e:
-        err = f"OpenRouter failed: {str(e)}"
-        logger.warning(err)
-        errors.append(err)
-    
+        _extracted_from_medicine_chat_24('OpenRouter failed: ', e, errors)
     # 3. Try Groq (Fallback 2)
     try:
         return try_groq(prompt)
     except Exception as e:
-        err = f"Groq failed: {str(e)}"
-        logger.warning(err)
-        errors.append(err)
-    
+        _extracted_from_medicine_chat_24('Groq failed: ', e, errors)
     # All providers failed
     error_message = f"All AI providers failed. Errors: {'; '.join(errors)}"
     logger.error(error_message)
     raise RuntimeError(error_message)
+
+
+# TODO Rename this here and in `medicine_chat`
+def _extracted_from_medicine_chat_24(arg0, e, errors):
+    err = f"{arg0}{str(e)}"
+    logger.warning(err)
+    errors.append(err)

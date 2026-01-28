@@ -10,8 +10,10 @@
         "medicai",
         "OPENROUTER",
         "Pydantic",
+        "Referer",
         "Reindexing",
         "Tesseract",
+        "trocr",
         "uvicorn",
         "XIME"
     ]

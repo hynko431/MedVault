@@ -36,15 +36,15 @@ def chat_endpoint(req: ChatRequest):
             detail={
                 "error": "Service temporarily unavailable",
                 "message": "All AI providers are currently unavailable. Please try again later.",
-                "technical_details": str(e)
-            }
-        )
+                "technical_details": str(e),
+            },
+        ) from e
     except Exception as e:
         logger.error(f"Unexpected error in chat endpoint: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "Internal server error",
-                "message": "An unexpected error occurred while processing your request."
-            }
-        )
+                "message": "An unexpected error occurred while processing your request.",
+            },
+        ) from e

@@ -284,6 +284,7 @@ curl -X POST "http://localhost:8000/medicine-chat" \
 ### **Issue: Chat always fails with 503**
 
 **Diagnosis:**
+
 ```bash
 # Check if API keys are set
 python -c "from app.core.config import settings; print(f'Anthropic: {settings.get_masked_key(\"ANTHROPIC_API_KEY\")}')"
@@ -298,11 +299,13 @@ python -c "from app.core.config import settings; print(f'Anthropic: {settings.ge
 **Diagnosis:** Check logs for which provider is being used
 
 **Possible causes:**
+
 - Primary provider down (fallback adds latency)
 - Network issues
 - Provider API rate limiting
 
-**Fix:** 
+**Fix:**
+
 - Check provider status pages
 - Increase timeout if needed
 - Optimize prompt length
@@ -314,6 +317,7 @@ python -c "from app.core.config import settings; print(f'Anthropic: {settings.ge
 **Diagnosis:** Primary provider reliability issues
 
 **Fix:**
+
 - Check Anthropic API status
 - Verify API key is valid and has quota
 - Consider rotating primary/fallback order

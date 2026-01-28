@@ -13,7 +13,7 @@ def extract_text_from_image(image_bytes: bytes) -> str:
         creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         if not creds_path:
             raise OCRError("GOOGLE_APPLICATION_CREDENTIALS environment variable is not set.")
-        
+
         if not os.path.exists(creds_path):
             # Instead of leaking the full path, we provide a helpful but safe message
             filename = os.path.basename(creds_path)
@@ -31,15 +31,15 @@ def extract_text_from_image(image_bytes: bytes) -> str:
 
         # if response.error.message:
         #     raise RuntimeError(response.error.message)
-        
+
         if response.error.message:
             raise OCRError(response.error.message)
-        
+
         texts = response.text_annotations
         if not texts:
             logger.info("OCR result: <NO TEXT DETECTED>")
             return ""
-        
+
         raw_text = texts[0].description
 
         # 🔍 LOG RAW OCR (TRUNCATED)
@@ -48,10 +48,7 @@ def extract_text_from_image(image_bytes: bytes) -> str:
 
         # Full OCR text is always the first entry
         return raw_text
-    
-    # except OCRError:
-    #     # Re-raise OCRError as is
-    #     raise OCRError(f"Vision OCR failed: {str(e)}")
+
     except Exception as e:
         # Log the error here if logging is configured
-        raise OCRError(f"Vision OCR failed: {str(e)}")
+        raise OCRError(f"Vision OCR failed: {str(e)}") from e

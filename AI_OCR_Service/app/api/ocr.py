@@ -22,20 +22,20 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
     try:
         # 1️⃣ Download image from S3
         image_bytes = download_image(str(request.image_url))
-        
+
         # 2️⃣ OCR using Google Vision (ADC)- Extract text using Google Vision OCR 
         raw_text = extract_text_from_image(image_bytes)
-        
+
         # 3️⃣ Clean the OCR text
         cleaned_text = clean_ocr_text(raw_text)
 
         if not cleaned_text.strip():
             raise HTTPException(status_code=400, detail="No text could be extracted from the image.")
-        
+
         # 4️⃣ Extract structured data using Claude
         extracted_json_text = extract_structured_data(cleaned_text)
         validated_data = validate_extracted_json(extracted_json_text)
-        
+
         ai_ready_text = prepare_text_for_ai(cleaned_text)
 
         # 5️⃣ ASYNC indexing for search
@@ -44,7 +44,7 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
             request.prescription_id,
             validated_data.model_dump()
         )
-        
+
         # 6️⃣ Determine status based on confidence
         # status = (
         #     "needs_review"
@@ -53,7 +53,7 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
         # )
 
         #3 return validated_data.model_dump()
-    
+
         #1 return {
         #     "prescription_id": request.prescription_id,
         #     "raw_text": raw_text,
@@ -72,15 +72,19 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
             # "disclaimer": MEDICAL_DISCLAIMER
         }
     except ImageDownloadError as e:
-        raise HTTPException(status_code=400, detail=f"Image download failed: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Image download failed: {str(e)}"
+        ) from e
 
     except OCRError as e:
         # The 502 error reported was due to Google Vision credentials not being found.
         # We keep the 502 status code as it correctly represents a gateway/upstream error.
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail=str(e)) from e
 
     except Exception as e:
         # Log the error for debugging
         import logging
         logging.getLogger(__name__).error(f"OCR processing error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"OCR processing error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"OCR processing error: {str(e)}"
+        ) from e

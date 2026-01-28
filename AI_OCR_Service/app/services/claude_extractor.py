@@ -179,9 +179,9 @@ def validate_extracted_json(data: dict) -> PrescriptionExtracted:
         # Clean up date field if it contains placeholders
         if data.get("date"):
             date_val = str(data["date"]).strip().upper()
-            if date_val in ["YYYY-MM-DD", "NULL", "NONE", "UNKNOWN"]:
+            if date_val in {"YYYY-MM-DD", "NULL", "NONE", "UNKNOWN"}:
                 data["date"] = None
-            
+
         return PrescriptionExtracted(**data)
     except ValidationError as e:
         logger.error(f"Validation error: {e.json()}")
