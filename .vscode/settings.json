@@ -1,7 +1,18 @@
 {
     "cSpell.words": [
+        "CEFI",
+        "CEFIXIME",
+        "clinlc",
         "creds",
         "dotenv",
-        "OPENROUTER"
+        "hospitai",
+        "KIMS",
+        "medicai",
+        "OPENROUTER",
+        "Pydantic",
+        "Reindexing",
+        "Tesseract",
+        "uvicorn",
+        "XIME"
     ]
 }

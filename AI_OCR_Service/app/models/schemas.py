@@ -2,14 +2,14 @@ from typing import List, Optional
 from datetime import date
 from pydantic import BaseModel, HttpUrl, Field
 
-class ConfidenceField(BaseModel):
-    value: Optional[str] = None
-    confidence: Optional[float] = None  # 0.0 → 1.0
-    raw_text: Optional[str] = None
+# class ConfidenceField(BaseModel):
+#     value: Optional[str] = None
+#     confidence: Optional[float] = None  # 0.0 → 1.0
+#     raw_text: Optional[str] = None
 
 class OCRRequest(BaseModel):
     prescription_id: str
-    image_url: HttpUrl
+    image_url: str  # Changed from HttpUrl to str for better compatibility with complex S3 URLs
 
 class Medicine(BaseModel):
     name: Optional[str] = None
@@ -18,14 +18,14 @@ class Medicine(BaseModel):
     duration: Optional[str] = None
     instructions: Optional[str] = None
 
-    confidence: Optional[float] = None
-    raw_text: Optional[str] = None 
+    # confidence: Optional[float] = None
+    # raw_text: Optional[str] = None 
 
 
 class PrescriptionExtracted(BaseModel):
     doctor_name: Optional[str] = None
     hospital: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[str] = None  # Changed from date to str for better AI compatibility
     patient_name: Optional[str] = None
     diagnosis: Optional[str] = None
 
@@ -34,7 +34,7 @@ class PrescriptionExtracted(BaseModel):
     tests_advised: List[str] = Field(default_factory=list)
     follow_up: Optional[str] = None
 
-    overall_confidence: Optional[float] = None
+    # overall_confidence: Optional[float] = None
 
 class OCRResponse(BaseModel):
     prescription_id: str

@@ -83,8 +83,14 @@ def clean_ocr_text(raw_text: str) -> str:
     """
     Main OCR cleaning pipeline.
     """
+    logger.info("Starting OCR cleaning pipeline")
+
     text = normalize_text(raw_text)
     text = fix_common_ocr_errors(text)
     text = join_broken_words(text)
     text = normalize_lines(text)
+
+    preview = text[:500].replace("\n", "\\n")
+    logger.info(f"Clean OCR output (first 500 chars): {preview}")
+    
     return text

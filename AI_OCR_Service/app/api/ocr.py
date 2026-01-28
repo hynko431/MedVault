@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from app.models.schemas import OCRRequest, OCRResponse
+from app.models.schemas import OCRRequest
 from app.services.image_downloader import download_image, ImageDownloadError
 from app.services.google_vision_ocr import extract_text_from_image, OCRError
 from app.services.ocr_cleaner import clean_ocr_text
@@ -7,9 +7,7 @@ from app.services.claude_extractor import extract_structured_data, validate_extr
 from app.services.search_indexer import index_prescription
 
 from app.services.ai_prep import prepare_text_for_ai
-
-from app.services.claude_extractor import extract_medicines, ClaudeExtractionError
-from app.models.schemas import PrescriptionExtract
+from app.core.disclaimer import MEDICAL_DISCLAIMER
 import json
 
 
@@ -19,6 +17,7 @@ router = APIRouter()
 def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks):
     """
     Extract structured data from prescription images using OCR and AI
+    Returns the exact JSON structure requested by the user.
     """
     try:
         # 1️⃣ Download image from S3
@@ -39,10 +38,6 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
         
         ai_ready_text = prepare_text_for_ai(cleaned_text)
 
-        claude_raw = extract_medicines(ai_ready_text)
-
-        structured_data = PrescriptionExtract.parse_obj(json.loads(claude_raw))
-
         # 5️⃣ ASYNC indexing for search
         background_tasks.add_task(
             index_prescription,
@@ -51,26 +46,31 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
         )
         
         # 6️⃣ Determine status based on confidence
-        status = (
-            "needs_review"
-            if validated_data.overall_confidence and validated_data.overall_confidence < 0.85
-            else "success"
-        )
+        # status = (
+        #     "needs_review"
+        #     if validated_data.overall_confidence and validated_data.overall_confidence < 0.85
+        #     else "success"
+        # )
 
-        return {
-            "prescription_id": request.prescription_id,
-            "raw_text": raw_text,
-            "cleaned_text": cleaned_text,
-            # "extracted_data": validated_data.model_dump(),
-            # "ai_ready_text": ai_ready_text,
-            "structured_data": structured_data.dict()
-        }
-        # return OCRResponse(
+        #3 return validated_data.model_dump()
+    
+        #1 return {
+        #     "prescription_id": request.prescription_id,
+        #     "raw_text": raw_text,
+        #     "cleaned_text": cleaned_text,
+        #     # "extracted_data": validated_data.model_dump(),
+        #     "ai_ready_text": ai_ready_text
+        # }
+        #2 return OCRResponse(
         #     prescription_id=request.prescription_id,
         #     status=status,
         #     extracted_data=validated_data
         # )
-    
+        return {
+            "prescription_id": request.prescription_id,
+            "structured_data": validated_data.model_dump(),
+            # "disclaimer": MEDICAL_DISCLAIMER
+        }
     except ImageDownloadError as e:
         raise HTTPException(status_code=400, detail=f"Image download failed: {str(e)}")
 
@@ -80,7 +80,7 @@ def extract_prescription(request: OCRRequest, background_tasks: BackgroundTasks)
         raise HTTPException(status_code=502, detail=str(e))
 
     except Exception as e:
+        # Log the error for debugging
+        import logging
+        logging.getLogger(__name__).error(f"OCR processing error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"OCR processing error: {str(e)}")
-    
-    except ClaudeExtractionError as e:
-        raise HTTPException(status_code=502, detail=str(e))

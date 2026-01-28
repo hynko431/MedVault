@@ -4,8 +4,18 @@ from pathlib import Path
 from typing import Optional
 
 # Load .env file from the root of the AI_OCR_Service directory
-env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+# We try multiple locations to be safe
+env_locations = [
+    Path(__file__).resolve().parent.parent.parent / ".env",  # Root of AI_OCR_Service
+    Path.cwd() / ".env",                                     # Current working directory
+]
+
+for loc in env_locations:
+    if loc.exists():
+        load_dotenv(dotenv_path=loc)
+        break
+else:
+    load_dotenv() # Fallback to default behavior
 
 class Settings:
     PROJECT_NAME: str = "AI OCR & Search Service"
