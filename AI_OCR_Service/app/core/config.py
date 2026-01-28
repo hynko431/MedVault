@@ -21,7 +21,7 @@ class Settings:
     PROJECT_NAME: str = "AI OCR & Search Service"
     
     # Google Cloud Vision
-    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     
     # Gemini (OCR Priority 1)
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
