@@ -25,7 +25,7 @@ class Settings:
     
     # Gemini (OCR Priority 1)
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-3-flash"
     
     # Anthropic (Extraction Priority 1)
     ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")

@@ -12,7 +12,7 @@ class GeminiOCRError(Exception):
 
 def extract_text_with_gemini(image_bytes: bytes) -> str:
     """
-    Extract text from image using Gemini 2.0 Flash (Priority 1).
+    Extract text from image using Gemini 3.0 Flash (Priority 1).
     """
     if not settings.GEMINI_API_KEY:
         logger.error("GEMINI_API_KEY not set in environment")
