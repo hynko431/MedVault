@@ -4,10 +4,11 @@ from elasticsearch import Elasticsearch
 from elastic_transport import ConnectionError as ESConnectionError
 from app.core.config import settings
 from datetime import datetime, timezone
-
-from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import RequestError
 import os
+
+if TYPE_CHECKING:
+    from elastic_transport import ObjectApiResponse
 
 ES_HOST = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
 
@@ -17,9 +18,6 @@ NEW_INDEX = "prescriptions_v2"
 MIGRATION_MODE = os.getenv("ES_MIGRATION_MODE", "false") == "true"
 
 es = Elasticsearch(ES_HOST)
-
-if TYPE_CHECKING:
-    from elastic_transport import ObjectApiResponse
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +116,7 @@ def search_by_medicine(
     medicine: str,
     user_id: str,
     size: int = 10
-) -> Optional[ObjectApiResponse[Any]]:
+) -> Optional[Any]:
     """
     Search prescriptions by medicine name with fuzzy matching.
     
@@ -170,7 +168,7 @@ def search_by_doctor_or_hospital(
     query_text: str,
     user_id: str,
     size: int = 10
-) -> Optional[ObjectApiResponse[Any]]:
+) -> Optional[Any]:
     """
     Search prescriptions by doctor name or hospital.
     
@@ -220,7 +218,7 @@ def search_all(
     page: int = 1,
     page_size: int = 10,
     sort_by: str = "relevance"
-) -> Optional[ObjectApiResponse[Any]]:
+) -> Optional[Any]:
     """
     Advanced search with:
     - LAYER 2: Exact match > Partial match (match_phrase boost)
@@ -356,7 +354,7 @@ def search_with_date_range(
     start_date: str,
     end_date: str,
     size: int = 10
-) -> Optional[ObjectApiResponse[Any]]:
+) -> Optional[Any]:
     """
     Search prescriptions by medicine name within a date range.
     
@@ -550,7 +548,7 @@ def fuzzy_search(
     page: int = 1,
     page_size: int = 10,
     sort_by: str = "relevance"
-) -> Optional[ObjectApiResponse[Any]]:
+) -> Optional[Any]:
     """
     Fuzzy search with safe tuning to prevent wild matches.
     

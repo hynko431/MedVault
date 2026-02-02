@@ -37,9 +37,12 @@ Complete setup and usage guide for the MedVault AI OCR & Search Service.
 
 ## 🔧 Installation
 
-### Step 1: Navigate to Service Directory
+### Step 1: Activate the .venv & Navigate to Service Directory
 
 ```bash
+C:/Users/hulkh/anaconda3/Scripts/activate
+conda activate MedVault 
+ C:/Users/hulkh/Downloads/ai_ocr_service/.venv/Scripts/Activate.ps1
 cd AI_OCR_Service
 ```
 
@@ -57,6 +60,12 @@ pip install -r requirements.txt
 - `python-dotenv` - Environment management
 - `google-cloud-vision` - OCR API client
 - `elasticsearch` - Search engine client
+- `requests` - getting requests
+- `logging` - adding logs in the terminal for the error analysis
+- `Pillow` - Image library
+- `transformers` - For Importing models
+- `torch` - DL Framework
+- `google-genai` - Google SDK for importing Latest Libraries
 
 ### Step 3: Verify Installation
 

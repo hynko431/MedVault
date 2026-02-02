@@ -23,7 +23,7 @@ class Medicine(BaseModel):
 
 
 class PrescriptionExtracted(BaseModel):
-    doctor_name: Optional[str] = None
+    doctor_name: List[str] = Field(default_factory=list)
     hospital: Optional[str] = None
     date: Optional[str] = None  # Changed from date to str for better AI compatibility
     patient_name: Optional[str] = None

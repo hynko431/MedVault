@@ -10,3 +10,4 @@ logging
 Pillow
 transformers
 torch
+google-genai
