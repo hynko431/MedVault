@@ -384,12 +384,15 @@ class DynamicPrescriptionExtracted(BaseModel):
 # ============================================================================
 
 class OCRRequest(BaseModel):
-    prescription_id: str
+    prescription_id: Optional[str] = "unknown"
     image_url: str
     
     # Optional: provide schema hints for better extraction
     expected_fields: Optional[List[str]] = None
     extraction_mode: Optional[str] = "dynamic"  # "dynamic" or "strict"
+
+    class Config:
+        extra = "allow"  # Allow extra fields to prevent 422 errors
 
 
 class OCRResponse(BaseModel):
