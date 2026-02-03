@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any, Union
 from datetime import date
-from pydantic import BaseModel, HttpUrl, Field, validator, root_validator
+from pydantic import BaseModel, HttpUrl, Field, field_validator, model_validator
 import re
 
 
@@ -39,9 +39,13 @@ class Medicine(BaseModel):
     class Config:
         extra = "allow"  # Critical: allows dynamic fields
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def capture_additional_fields(cls, values):
         """Capture any extra fields into additional_info"""
+        if not isinstance(values, dict):
+            return values
+            
         known_fields = {
             'name', 'dosage', 'frequency', 'duration', 'instructions',
             'form', 'route', 'timing', 'quantity', 'refills', 'additional_info'
@@ -74,9 +78,13 @@ class VitalSigns(BaseModel):
     class Config:
         extra = "allow"
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def capture_additional_vitals(cls, values):
         """Capture any extra vitals"""
+        if not isinstance(values, dict):
+            return values
+            
         known_fields = {
             'blood_pressure', 'pulse_rate', 'temperature', 'respiratory_rate',
             'oxygen_saturation', 'weight', 'height', 'bmi', 'additional_vitals'
@@ -113,9 +121,13 @@ class PatientInfo(BaseModel):
     class Config:
         extra = "allow"
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def capture_additional_patient_info(cls, values):
         """Capture any extra patient information"""
+        if not isinstance(values, dict):
+            return values
+            
         known_fields = {
             'name', 'age', 'gender', 'phone', 'email', 'address',
             'patient_id', 'insurance_id', 'emergency_contact', 
@@ -147,9 +159,13 @@ class DoctorInfo(BaseModel):
     class Config:
         extra = "allow"
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def normalize_doctor_data(cls, values):
         """Handle both single and multiple doctors"""
+        if not isinstance(values, dict):
+            return values
+            
         # Normalize name/names
         if 'name' in values and values['name'] and 'names' not in values:
             values['names'] = [values['name']]
@@ -197,9 +213,13 @@ class HospitalInfo(BaseModel):
     class Config:
         extra = "allow"
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def capture_additional_hospital_info(cls, values):
         """Capture any extra hospital information"""
+        if not isinstance(values, dict):
+            return values
+            
         known_fields = {
             'name', 'address', 'phone', 'email', 'website', 
             'registration_number', 'additional_info'
@@ -261,11 +281,15 @@ class DynamicPrescriptionExtracted(BaseModel):
         extra = "allow"  # This is the KEY - allows any field
         validate_assignment = True
     
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def handle_dynamic_fields(cls, values):
         """
         Intelligently organize dynamic fields into appropriate sections.
         """
+        if not isinstance(values, dict):
+            return values
+            
         # Known top-level fields
         known_fields = {
             'patient', 'doctor', 'hospital', 'vitals',
@@ -362,14 +386,16 @@ class DynamicPrescriptionExtracted(BaseModel):
         
         return values
     
-    @validator('diagnosis', pre=True)
+    @field_validator('diagnosis', mode='before')
+    @classmethod
     def normalize_diagnosis(cls, v):
         """Convert diagnosis to list if it's a string"""
         if isinstance(v, str):
             return [v] if v.strip() else None
         return v
     
-    @validator('date', pre=True)
+    @field_validator('date', mode='before')
+    @classmethod
     def clean_date(cls, v):
         """Clean placeholder dates"""
         if isinstance(v, str):
