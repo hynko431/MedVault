@@ -1,11 +1,14 @@
-# Environment variables and credentials
+# --- Environment and Credentials ---
 .env
 .env.local
 .env.*.local
-medvault-*.json
+*.json
+!pyrightconfig.json
+!skills-lock.json
 credentials.json
+medvault-*.json
 
-# Python
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -29,32 +32,45 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pyre_configuration
+.ruff_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
 
-# Virtual environments
-venv/
-ENV/
-env/
-.venv
-
-# IDE
+# --- IDE and Tools ---
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Elasticsearch
+# --- Infrastructure ---
 .elasticsearch/
+docker/certs/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Logs
+# --- Project Specific Logs and Reports ---
 *.log
 logs/
+failures*.txt
+pyright_output*.json
+pyright_terminal.txt
+scores_output*.txt
+verification_*.json
+AI_OCR_Service/trace.txt
 
-
-# Agent folders
+# --- AI Agents ---
 .agents/
 .agent/
+_agents/
+_agent/
