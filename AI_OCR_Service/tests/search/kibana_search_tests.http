@@ -1,0 +1,1271 @@
+# ==============================================================================
+# KIBANA DEV TOOLS CONSOLE - SEARCH TEST CASES
+# ==============================================================================
+# 
+# Copy and paste these commands into Kibana Dev Tools Console:
+# http://localhost:5601/app/dev_tools#/console
+#
+# These test cases correspond to the search endpoints in app/api/search.py
+# and query builders in app/services/search_indexer.py
+#
+# Index: prescriptions_current
+# ==============================================================================
+
+
+# ==============================================================================
+# SECTION 1: INDEX MANAGEMENT
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1.1 Check if index exists
+# ------------------------------------------------------------------------------
+# Corresponds to: Index health checks in search_indexer.py
+HEAD /prescriptions_current
+
+
+# ------------------------------------------------------------------------------
+# 1.2 Create index with mappings (from setup_elasticsearch.py)
+# ------------------------------------------------------------------------------
+# Corresponds to: AsyncSearchService.create_index_if_not_exists()
+PUT /prescriptions_current
+{
+  "settings": {
+    "number_of_shards": 1,
+    "analysis": {
+      "analyzer": {
+        "english_custom": {
+          "type": "standard",
+          "stopwords": "_english_"
+        },
+        "lowercase_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "prescription_id": { "type": "keyword" },
+      "user_id": { "type": "keyword" },
+      "doctor_name": { "type": "search_as_you_type" },
+      "hospital": { "type": "search_as_you_type" },
+      "medicine_names": { "type": "search_as_you_type" },
+      "patient_name": { "type": "text" },
+      "diagnosis": { "type": "text" },
+      "raw_text": {
+        "type": "text",
+        "analyzer": "english_custom"
+      },
+      "created_at": { "type": "date" },
+      "medicines": { "type": "object" },
+      "doctor": { "type": "object" },
+      "hospital_info": { "type": "object" },
+      "patient": { "type": "object" }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 1.3 Get index mappings
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_mapping
+
+
+# ------------------------------------------------------------------------------
+# 1.4 Get index settings
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_settings
+
+
+# ------------------------------------------------------------------------------
+# 1.5 Delete index (USE WITH CAUTION)
+# ------------------------------------------------------------------------------
+# DELETE /prescriptions_current
+
+
+# ------------------------------------------------------------------------------
+# 1.6 Count documents in index
+# ------------------------------------------------------------------------------
+# Corresponds to: Index stats check in search.py health endpoint
+GET /prescriptions_current/_count
+
+
+# ==============================================================================
+# SECTION 2: SAMPLE DOCUMENT OPERATIONS
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 2.1 Index sample prescription 1 (User ID: 1)
+# ------------------------------------------------------------------------------
+# Corresponds to: Indexing in setup_elasticsearch.py sample data
+POST /prescriptions_current/_doc/rx_001
+{
+  "prescription_id": "rx_001",
+  "user_id": "1",
+  "doctor_name": "Dr. Sarah Johnson",
+  "hospital": "City Medical Center",
+  "patient_name": "John Doe",
+  "medicine_names": ["Paracetamol", "Ibuprofen", "Vitamin D"],
+  "diagnosis": ["Fever", "Body Pain"],
+  "raw_text": "Paracetamol 500mg twice daily for fever, Ibuprofen 400mg as needed for body pain, Vitamin D 1000 IU daily for deficiency",
+  "created_at": "2024-01-15T10:30:00Z",
+  "medicines": [
+    { "name": "Paracetamol", "dosage": "500mg", "frequency": "twice daily" },
+    { "name": "Ibuprofen", "dosage": "400mg", "frequency": "as needed" },
+    { "name": "Vitamin D", "dosage": "1000 IU", "frequency": "daily" }
+  ],
+  "doctor": {
+    "name": "Dr. Sarah Johnson",
+    "specialization": "General Medicine"
+  },
+  "hospital_info": {
+    "name": "City Medical Center",
+    "location": "Downtown"
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 2.2 Index sample prescription 2 (User ID: 1)
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_doc/rx_002
+{
+  "prescription_id": "rx_002",
+  "user_id": "1",
+  "doctor_name": "Dr. Michael Chen",
+  "hospital": "General Hospital",
+  "patient_name": "John Doe",
+  "medicine_names": ["Amoxicillin", "Paracetamol"],
+  "diagnosis": ["Bacterial Infection"],
+  "raw_text": "Amoxicillin 500mg three times daily for 7 days for bacterial infection, Paracetamol for fever management",
+  "created_at": "2024-02-20T14:00:00Z",
+  "medicines": [
+    { "name": "Amoxicillin", "dosage": "500mg", "frequency": "three times daily", "duration": "7 days" },
+    { "name": "Paracetamol", "dosage": "500mg", "frequency": "as needed" }
+  ],
+  "doctor": {
+    "name": "Dr. Michael Chen",
+    "specialization": "Infectious Disease"
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 2.3 Index sample prescription 3 (User ID: 2 - different user)
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_doc/rx_003
+{
+  "prescription_id": "rx_003",
+  "user_id": "2",
+  "doctor_name": "Dr. Emily Williams",
+  "hospital": "St. Mary's Hospital",
+  "patient_name": "Jane Smith",
+  "medicine_names": ["Metformin", "Atorvastatin"],
+  "diagnosis": ["Type 2 Diabetes", "High Cholesterol"],
+  "raw_text": "Metformin 500mg twice daily for diabetes management, Atorvastatin 10mg once daily for cholesterol control",
+  "created_at": "2024-03-10T09:15:00Z",
+  "medicines": [
+    { "name": "Metformin", "dosage": "500mg", "frequency": "twice daily" },
+    { "name": "Atorvastatin", "dosage": "10mg", "frequency": "once daily" }
+  ],
+  "doctor": {
+    "name": "Dr. Emily Williams",
+    "specialization": "Endocrinology"
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 2.4 Index sample prescription 4 (User ID: 1)
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_doc/rx_004
+{
+  "prescription_id": "rx_004",
+  "user_id": "1",
+  "doctor_name": "Dr. Sarah Johnson",
+  "hospital": "City Medical Center",
+  "patient_name": "John Doe",
+  "medicine_names": ["Aspirin", "Clopidogrel"],
+  "diagnosis": ["Heart Disease"],
+  "raw_text": "Aspirin 81mg daily for heart health, Clopidogrel 75mg daily as blood thinner",
+  "created_at": "2024-04-05T11:00:00Z",
+  "medicines": [
+    { "name": "Aspirin", "dosage": "81mg", "frequency": "daily" },
+    { "name": "Clopidogrel", "dosage": "75mg", "frequency": "daily" }
+  ]
+}
+
+
+# ------------------------------------------------------------------------------
+# 2.5 Index sample prescription 5 (User ID: 1)
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_doc/rx_005
+{
+  "prescription_id": "rx_005",
+  "user_id": "1",
+  "doctor_name": "Dr. Robert Brown",
+  "hospital": "Memorial Hospital",
+  "patient_name": "John Doe",
+  "medicine_names": ["Lisinopril", "Hydrochlorothiazide", "Paracetamol"],
+  "diagnosis": ["Hypertension"],
+  "raw_text": "Lisinopril 10mg daily for blood pressure, Hydrochlorothiazide 12.5mg daily as diuretic, Paracetamol as needed for pain",
+  "created_at": "2024-05-12T16:30:00Z",
+  "medicines": [
+    { "name": "Lisinopril", "dosage": "10mg", "frequency": "daily" },
+    { "name": "Hydrochlorothiazide", "dosage": "12.5mg", "frequency": "daily" },
+    { "name": "Paracetamol", "dosage": "500mg", "frequency": "as needed" }
+  ]
+}
+
+
+# ------------------------------------------------------------------------------
+# 2.6 Get a specific document by ID
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_doc/rx_001
+
+
+# ------------------------------------------------------------------------------
+# 2.7 Refresh index to make documents searchable immediately
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_refresh
+
+
+# ==============================================================================
+# SECTION 3: BASIC SEARCH QUERIES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 3.1 Match all documents (User ID: 1)
+# ------------------------------------------------------------------------------
+# Corresponds to: Base query structure used across all endpoints
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 3.2 Simple match query on medicine_names
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/medicine?q=Paracetamol&user_id=1
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 3.3 Fuzzy match on medicine names (AUTO fuzziness)
+# ------------------------------------------------------------------------------
+# Corresponds to: QueryBuilder.build_medicine_search() with fuzziness: AUTO
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": {
+              "query": "Paracetamol",
+              "fuzziness": "AUTO"
+            }
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 3.4 Multi-match across multiple fields
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/direct-search (direct_es_search endpoint)
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "multi_match": {
+            "query": "rocky mountain",
+            "fields": ["medicine_names^3", "doctor_name", "hospital", "raw_text"],
+            "fuzziness": "AUTO"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 3.5 Search by doctor name or hospital (should query)
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/provider?q=Sarah&user_id=1
+# Corresponds to: QueryBuilder.build_doctor_hospital_search()
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        { "match": { "doctor_name": "Sarah" } },
+        { "match": { "hospital": "Sarah" } }
+      ],
+      "minimum_should_match": 1,
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 3.6 Match phrase for exact phrase matching
+# ------------------------------------------------------------------------------
+# Corresponds to: QueryBuilder.build_combined_search() - exact match priority
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "match_phrase": {
+            "medicine_names": {
+              "query": "Vitamin D",
+              "boost": 8.0
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1,
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 4: ADVANCED SEARCH QUERIES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 4.1 Universal search with combined fields and boosts
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/all?q=Paracetamol&user_id=1&page=1&page_size=10
+# Corresponds to: QueryBuilder.build_combined_search() with relevance sorting
+GET /prescriptions_current/_search
+{
+  "from": 0,
+  "size": 10,
+  "sort": ["_score"],
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "should": [
+            {
+              "match_phrase": {
+                "medicine_names": {
+                  "query": "Paracetamol",
+                  "boost": 8.0
+                }
+              }
+            },
+            {
+              "match": {
+                "medicine_names": {
+                  "query": "Paracetamol",
+                  "boost": 5.0
+                }
+              }
+            },
+            {
+              "match_phrase": {
+                "doctor_name": {
+                  "query": "Paracetamol",
+                  "boost": 4.0
+                }
+              }
+            },
+            {
+              "match": {
+                "doctor_name": {
+                  "query": "Paracetamol",
+                  "boost": 2.0
+                }
+              }
+            },
+            {
+              "match_phrase": {
+                "hospital": {
+                  "query": "Paracetamol",
+                  "boost": 2.0
+                }
+              }
+            },
+            {
+              "match": {
+                "hospital": {
+                  "query": "Paracetamol",
+                  "boost": 1.0
+                }
+              }
+            }
+          ],
+          "minimum_should_match": 1,
+          "filter": [
+            { "term": { "user_id": "1" } }
+          ]
+        }
+      },
+      "functions": [
+        {
+          "gauss": {
+            "created_at": {
+              "origin": "now",
+              "scale": "30d",
+              "decay": 0.5
+            }
+          }
+        }
+      ],
+      "score_mode": "avg",
+      "boost_mode": "sum"
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 4.2 Universal search sorted by date
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/all?q=Paracetamol&user_id=1&sort_by=date
+GET /prescriptions_current/_search
+{
+  "from": 0,
+  "size": 10,
+  "sort": [
+    { "created_at": { "order": "desc" } }
+  ],
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "should": [
+            {
+              "match_phrase": {
+                "medicine_names": {
+                  "query": "Paracetamol",
+                  "boost": 8.0
+                }
+              }
+            },
+            {
+              "match": {
+                "medicine_names": {
+                  "query": "Paracetamol",
+                  "boost": 5.0
+                }
+              }
+            }
+          ],
+          "minimum_should_match": 1,
+          "filter": [
+            { "term": { "user_id": "1" } }
+          ]
+        }
+      },
+      "functions": [
+        {
+          "gauss": {
+            "created_at": {
+              "origin": "now",
+              "scale": "30d",
+              "decay": 0.5
+            }
+          }
+        }
+      ],
+      "score_mode": "avg",
+      "boost_mode": "sum"
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 4.3 Fuzzy search with safe tuning
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/fuzzy?q=Pacetamol&user_id=1 (typo in query)
+# Corresponds to: QueryBuilder.build_fuzzy_search()
+GET /prescriptions_current/_search
+{
+  "from": 0,
+  "size": 10,
+  "sort": ["_score"],
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "match": {
+            "medicine_names": {
+              "query": "Pacetamol",
+              "fuzziness": "AUTO",
+              "prefix_length": 2,
+              "max_expansions": 50,
+              "boost": 3.0
+            }
+          }
+        },
+        {
+          "match": {
+            "doctor_name": {
+              "query": "Pacetamol",
+              "fuzziness": "AUTO",
+              "prefix_length": 2,
+              "max_expansions": 50,
+              "boost": 1.5
+            }
+          }
+        },
+        {
+          "match": {
+            "hospital": {
+              "query": "Pacetamol",
+              "fuzziness": "AUTO",
+              "prefix_length": 2,
+              "max_expansions": 50,
+              "boost": 1.0
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1,
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 4.4 Autocomplete search with exact match priority
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/autocomplete?q=Para&user_id=1
+# Corresponds to: QueryBuilder.build_autocomplete_search()
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "match_phrase": {
+            "medicine_names": {
+              "query": "Para",
+              "boost": 10.0
+            }
+          }
+        },
+        {
+          "match": {
+            "medicine_names": {
+              "query": "Para",
+              "operator": "and",
+              "boost": 5.0
+            }
+          }
+        },
+        {
+          "match_phrase": {
+            "doctor_name": {
+              "query": "Para",
+              "boost": 5.0
+            }
+          }
+        },
+        {
+          "match": {
+            "doctor_name": {
+              "query": "Para",
+              "boost": 2.0
+            }
+          }
+        },
+        {
+          "match_phrase": {
+            "hospital": {
+              "query": "Para",
+              "boost": 3.0
+            }
+          }
+        },
+        {
+          "match": {
+            "hospital": {
+              "query": "Para",
+              "boost": 1.0
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1,
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 4.5 Date range search
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/date-range?q=Paracetamol&user_id=1&start_date=2024-01-01&end_date=2024-03-31
+# Corresponds to: QueryBuilder.build_date_range_search()
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": {
+              "query": "Paracetamol",
+              "fuzziness": "AUTO"
+            }
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } },
+        {
+          "range": {
+            "created_at": {
+              "gte": "2024-01-01",
+              "lte": "2024-03-31"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 4.6 Search with pagination (Page 2, 5 results per page)
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/all?q=Paracetamol&user_id=1&page=2&page_size=5
+GET /prescriptions_current/_search
+{
+  "from": 5,
+  "size": 5,
+  "sort": ["_score"],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 5: AGGREGATION QUERIES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 5.1 Get all unique medicine names for a user
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "aggs": {
+    "unique_medicines": {
+      "terms": {
+        "field": "medicine_names",
+        "size": 50
+      }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 5.2 Get prescription count by doctor
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "aggs": {
+    "prescriptions_by_doctor": {
+      "terms": {
+        "field": "doctor_name.keyword",
+        "size": 20
+      }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 5.3 Get prescription count by hospital
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "aggs": {
+    "prescriptions_by_hospital": {
+      "terms": {
+        "field": "hospital.keyword",
+        "size": 20
+      }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 5.4 Get prescriptions by month (date histogram)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "aggs": {
+    "prescriptions_over_time": {
+      "date_histogram": {
+        "field": "created_at",
+        "calendar_interval": "month",
+        "format": "yyyy-MM"
+      }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 5.5 Get top medicines with prescription counts
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "aggs": {
+    "top_medicines": {
+      "terms": {
+        "field": "medicine_names",
+        "size": 10,
+        "order": { "_count": "desc" }
+      }
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 6: FULL TEXT SEARCH QUERIES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 6.1 Search in raw_text field (English analyzer)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "raw_text": "fever management"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 6.2 Query string search (powerful Lucene syntax)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "query_string": {
+            "default_field": "raw_text",
+            "query": "Paracetamol AND (fever OR pain)"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 6.3 Wildcard search (use sparingly - performance intensive)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "medicine_names": {
+              "value": "Para*",
+              "boost": 1.0
+            }
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 6.4 Prefix search (faster than wildcard)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "prefix": {
+            "medicine_names": "Para"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 7: HIGHLIGHTING & SOURCE FILTERING
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 7.1 Search with highlighting
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  },
+  "highlight": {
+    "fields": {
+      "medicine_names": {},
+      "raw_text": {}
+    },
+    "pre_tags": ["<mark>"],
+    "post_tags": ["</mark>"]
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 7.2 Search with source filtering (return only specific fields)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "_source": ["prescription_id", "doctor_name", "medicine_names", "created_at"],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 7.3 Search excluding source (only get metadata)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "_source": false,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 8: CLUSTER & INDEX HEALTH
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 8.1 Check cluster health
+# ------------------------------------------------------------------------------
+# Corresponds to: GET /search/health-new and GET /search/health
+GET /_cluster/health
+
+
+# ------------------------------------------------------------------------------
+# 8.2 Get cluster info
+# ------------------------------------------------------------------------------
+GET /
+
+
+# ------------------------------------------------------------------------------
+# 8.3 Get index stats
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_stats
+
+
+# ------------------------------------------------------------------------------
+# 8.4 Get index segments info
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_segments
+
+
+# ------------------------------------------------------------------------------
+# 8.5 List all indices
+# ------------------------------------------------------------------------------
+GET /_cat/indices?v
+
+
+# ==============================================================================
+# SECTION 9: UPDATE & DELETE OPERATIONS
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 9.1 Update a document (partial update)
+# ------------------------------------------------------------------------------
+POST /prescriptions_current/_update/rx_001
+{
+  "doc": {
+    "doctor_name": "Dr. Sarah Johnson-Updated",
+    "hospital": "City Medical Center - Downtown"
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 9.2 Delete a specific document
+# ------------------------------------------------------------------------------
+# Corresponds to: delete_prescription() function
+# DELETE /prescriptions_current/_doc/rx_005
+
+
+# ------------------------------------------------------------------------------
+# 9.3 Delete by query (delete all docs for a user - USE WITH EXTREME CAUTION)
+# ------------------------------------------------------------------------------
+# POST /prescriptions_current/_delete_by_query
+# {
+#   "query": {
+#     "term": {
+#       "user_id": "1"
+#     }
+#   }
+# }
+
+
+# ==============================================================================
+# SECTION 10: BULK OPERATIONS
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 10.1 Bulk index multiple documents
+# ------------------------------------------------------------------------------
+POST /_bulk
+{ "index": { "_index": "prescriptions_current", "_id": "rx_006" } }
+{ "prescription_id": "rx_006", "user_id": "1", "doctor_name": "Dr. Lisa Anderson", "hospital": "Community Health Center", "medicine_names": ["Azithromycin", "Vitamin C"], "raw_text": "Azithromycin 250mg for 5 days, Vitamin C 500mg daily", "created_at": "2024-06-01T10:00:00Z" }
+{ "index": { "_index": "prescriptions_current", "_id": "rx_007" } }
+{ "prescription_id": "rx_007", "user_id": "1", "doctor_name": "Dr. James Wilson", "hospital": "University Hospital", "medicine_names": ["Omeprazole", "Domperidone"], "raw_text": "Omeprazole 20mg before breakfast, Domperidone 10mg as needed", "created_at": "2024-06-15T14:30:00Z" }
+
+
+# ==============================================================================
+# SECTION 11: ADVANCED FILTERING & COMPOUND QUERIES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 11.1 Search with multiple filters (medicine + date range + doctor)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "medicine_names": "Paracetamol"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } },
+        {
+          "range": {
+            "created_at": {
+              "gte": "2024-01-01",
+              "lte": "2024-12-31"
+            }
+          }
+        },
+        { "term": { "doctor_name.keyword": "Dr. Sarah Johnson" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 11.2 Search with must_not (exclude certain medicines)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        { "match_all": {} }
+      ],
+      "must_not": [
+        { "match": { "medicine_names": "Paracetamol" } }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } }
+      ]
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 11.3 Nested bool query (complex filtering)
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              { "match": { "medicine_names": "Aspirin" } },
+              { "match": { "medicine_names": "Clopidogrel" } }
+            ],
+            "minimum_should_match": 1
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "user_id": "1" } },
+        {
+          "range": {
+            "created_at": {
+              "gte": "2024-01-01"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+# ==============================================================================
+# SECTION 12: SEARCH TEMPLATES (for reusable queries)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 12.1 Store a search template
+# ------------------------------------------------------------------------------
+POST /_scripts/prescription_search_template
+{
+  "script": {
+    "lang": "mustache",
+    "source": {
+      "size": "{{size}}",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "multi_match": {
+                "query": "{{query}}",
+                "fields": ["medicine_names^3", "doctor_name", "hospital", "raw_text"],
+                "fuzziness": "AUTO"
+              }
+            }
+          ],
+          "filter": [
+            { "term": { "user_id": "{{user_id}}" } }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# 12.2 Use the search template
+# ------------------------------------------------------------------------------
+GET /prescriptions_current/_search/template
+{
+  "id": "prescription_search_template",
+  "params": {
+    "query": "Paracetamol",
+    "user_id": "1",
+    "size": "10"
+  }
+}
+
+
+# ==============================================================================
+# QUICK REFERENCE: API Endpoints to Kibana Query Mapping
+# ==============================================================================
+#
+# GET /search/health              -> GET /_cluster/health
+# GET /search/medicine            -> Section 3.3 (fuzzy medicine search)
+# GET /search/provider            -> Section 3.5 (doctor/hospital search)
+# GET /search/all                 -> Section 4.1 (universal search)
+# GET /search/date-range          -> Section 4.5 (date range search)
+# GET /search/autocomplete        -> Section 4.4 (autocomplete)
+# GET /search/fuzzy               -> Section 4.3 (fuzzy with tuning)
+# GET /search/direct-search       -> Section 3.4 (multi-match)
+# GET /search/medicine-async      -> Section 3.3 (same as /medicine)
+# GET /search/health-new          -> GET /_cluster/health
+#
+# ==============================================================================

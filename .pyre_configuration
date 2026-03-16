@@ -1,0 +1,25 @@
+{
+  "site_package_search_strategy": "all",
+  "source_directories": [
+    {
+      "import_root": "C:/Users/hulkh/Downloads/ai_ocr_service/AI_OCR_Service",
+      "source": "app"
+    },
+    {
+      "import_root": "C:/Users/hulkh/Downloads/ai_ocr_service/AI_OCR_Service",
+      "source": "tests"
+    }
+  ],
+  "search_path": [
+    "C:/Users/hulkh/anaconda3/envs/MedVault/Lib/site-packages",
+    "C:/Users/hulkh/Downloads/ai_ocr_service/AI_OCR_Service"
+  ],
+  "exclude": [
+    "C:/Users/hulkh/.paddlex",
+    "C:/Users/hulkh/.paddlenlp",
+    "C:/Users/hulkh/.paddleseq"
+  ],
+  "python_version": "3.14",
+  "binary": "C:/Users/hulkh/anaconda3/envs/MedVault/python.exe",
+  "number_of_workers": 4
+}

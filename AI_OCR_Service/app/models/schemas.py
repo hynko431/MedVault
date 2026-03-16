@@ -1,7 +1,10 @@
 from typing import List, Optional, Dict, Any, Union
 from datetime import date
-from pydantic import BaseModel, HttpUrl, Field, field_validator, model_validator
+from pydantic import BaseModel, HttpUrl, Field, field_validator, model_validator, ConfigDict
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -10,16 +13,17 @@ import re
 
 class DynamicField(BaseModel):
     """Represents any field with optional metadata"""
+    model_config = ConfigDict(extra='allow')
+    
     value: Optional[Any] = None
     confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
     raw_text: Optional[str] = None
-    
-    class Config:
-        extra = "allow"  # Allow additional fields
 
 
 class Medicine(BaseModel):
     """Medicine with flexible fields - any field can be present or absent"""
+    model_config = ConfigDict(extra='allow')
+    
     name: Optional[str] = None
     dosage: Optional[str] = None
     frequency: Optional[str] = None
@@ -36,12 +40,9 @@ class Medicine(BaseModel):
     # Allow any other fields the AI might extract
     additional_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"  # Critical: allows dynamic fields
-    
     @model_validator(mode='before')
     @classmethod
-    def capture_additional_fields(cls, values):
+    def capture_additional_fields(cls, values: Any) -> Any:
         """Capture any extra fields into additional_info"""
         if not isinstance(values, dict):
             return values
@@ -63,6 +64,8 @@ class Medicine(BaseModel):
 
 class VitalSigns(BaseModel):
     """Dynamic vital signs - any vital can be present"""
+    model_config = ConfigDict(extra='allow')
+    
     blood_pressure: Optional[str] = None
     pulse_rate: Optional[str] = None
     temperature: Optional[str] = None
@@ -75,12 +78,9 @@ class VitalSigns(BaseModel):
     # Dynamic additional vitals
     additional_vitals: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"
-    
     @model_validator(mode='before')
     @classmethod
-    def capture_additional_vitals(cls, values):
+    def capture_additional_vitals(cls, values: Any) -> Any:
         """Capture any extra vitals"""
         if not isinstance(values, dict):
             return values
@@ -102,6 +102,8 @@ class VitalSigns(BaseModel):
 
 class PatientInfo(BaseModel):
     """Dynamic patient information"""
+    model_config = ConfigDict(extra='allow')
+    
     name: Optional[str] = None
     age: Optional[Union[int, str]] = None
     gender: Optional[str] = None
@@ -118,12 +120,9 @@ class PatientInfo(BaseModel):
     
     additional_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"
-    
     @model_validator(mode='before')
     @classmethod
-    def capture_additional_patient_info(cls, values):
+    def capture_additional_patient_info(cls, values: Any) -> Any:
         """Capture any extra patient information"""
         if not isinstance(values, dict):
             return values
@@ -146,6 +145,8 @@ class PatientInfo(BaseModel):
 
 class DoctorInfo(BaseModel):
     """Dynamic doctor information"""
+    model_config = ConfigDict(extra='allow')
+    
     name: Optional[str] = None
     names: Optional[List[str]] = Field(default_factory=list)  # Multiple doctors
     qualification: Optional[str] = None
@@ -156,12 +157,9 @@ class DoctorInfo(BaseModel):
     
     additional_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"
-    
     @model_validator(mode='before')
     @classmethod
-    def normalize_doctor_data(cls, values):
+    def normalize_doctor_data(cls, values: Any) -> Any:
         """Handle both single and multiple doctors"""
         if not isinstance(values, dict):
             return values
@@ -201,6 +199,8 @@ class DoctorInfo(BaseModel):
 
 class HospitalInfo(BaseModel):
     """Dynamic hospital/clinic information"""
+    model_config = ConfigDict(extra='allow')
+    
     name: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
@@ -210,12 +210,9 @@ class HospitalInfo(BaseModel):
     
     additional_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"
-    
     @model_validator(mode='before')
     @classmethod
-    def capture_additional_hospital_info(cls, values):
+    def capture_additional_hospital_info(cls, values: Any) -> Any:
         """Capture any extra hospital information"""
         if not isinstance(values, dict):
             return values
@@ -243,6 +240,7 @@ class DynamicPrescriptionExtracted(BaseModel):
     """
     Fully dynamic prescription schema that adapts to any prescription format.
     """
+    model_config = ConfigDict(extra='allow', validate_assignment=True)
     
     # Core structured sections (optional)
     patient: Optional[PatientInfo] = None
@@ -277,18 +275,26 @@ class DynamicPrescriptionExtracted(BaseModel):
     # Metadata
     extraction_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    class Config:
-        extra = "allow"  # This is the KEY - allows any field
-        validate_assignment = True
-    
     @model_validator(mode='before')
     @classmethod
-    def handle_dynamic_fields(cls, values):
+    def handle_dynamic_fields(cls, values: Any) -> Any:
         """
         Intelligently organize dynamic fields into appropriate sections.
+        
+        SECURITY FIX: Previously this returned non-dict values without validation,
+        bypassing all type safety. Now wraps non-dict inputs in a proper structure.
         """
+        # SECURITY FIX: Handle non-dict inputs properly
         if not isinstance(values, dict):
-            return values
+            logger.warning(
+                f"DynamicPrescriptionExtracted expected dict, got {type(values).__name__}. "
+                f"Wrapping in proper structure."
+            )
+            # Wrap non-dict in a proper structure to maintain validation
+            values = {
+                "raw_input": str(values),
+                "additional_fields": {"original_type": type(values).__name__}
+            }
             
         # Known top-level fields
         known_fields = {
@@ -301,8 +307,10 @@ class DynamicPrescriptionExtracted(BaseModel):
         }
         
         # Collect unknown fields
-        unknown_fields = {}
-        for key, value in list(values.items()):
+        from typing import cast
+        unknown_fields: Dict[str, Any] = {}
+        values_dict = cast(Dict[str, Any], values)
+        for key, value in list(values_dict.items()):
             if key not in known_fields and value is not None:
                 unknown_fields[key] = value
         
@@ -339,56 +347,67 @@ class DynamicPrescriptionExtracted(BaseModel):
         
         # Merge categorized fields into structured sections
         if patient_fields:
-            if 'patient' not in values or values['patient'] is None:
-                values['patient'] = {}
-            if isinstance(values['patient'], dict):
-                values['patient'].update(patient_fields)
+            if 'patient' not in values_dict or values_dict['patient'] is None:
+                values_dict['patient'] = {}
+            p_val = values_dict.get('patient')
+            if isinstance(p_val, dict):
+                p_val.update(patient_fields)
         
         if doctor_fields:
-            if 'doctor' not in values or values['doctor'] is None:
-                values['doctor'] = {}
-            if isinstance(values['doctor'], dict):
-                values['doctor'].update(doctor_fields)
+            if 'doctor' not in values_dict or values_dict['doctor'] is None:
+                values_dict['doctor'] = {}
+            d_val = values_dict.get('doctor')
+            if isinstance(d_val, dict):
+                d_val.update(doctor_fields)
         
         if hospital_fields:
-            if 'hospital' not in values or values['hospital'] is None:
-                values['hospital'] = {}
-            if isinstance(values['hospital'], dict):
-                values['hospital'].update(hospital_fields)
+            if 'hospital' not in values_dict or values_dict['hospital'] is None:
+                values_dict['hospital'] = {}
+            h_val = values_dict.get('hospital')
+            if isinstance(h_val, dict):
+                h_val.update(hospital_fields)
         
         if vital_fields:
-            if 'vitals' not in values or values['vitals'] is None:
-                values['vitals'] = {}
-            if isinstance(values['vitals'], dict):
-                values['vitals'].update(vital_fields)
+            if 'vitals' not in values_dict or values_dict['vitals'] is None:
+                values_dict['vitals'] = {}
+            v_val = values_dict.get('vitals')
+            if isinstance(v_val, dict):
+                v_val.update(vital_fields)
         
         # Store truly unknown fields
         if remaining_fields:
-            if 'additional_fields' not in values:
-                values['additional_fields'] = {}
-            values['additional_fields'].update(remaining_fields)
+            if 'additional_fields' not in values_dict:
+                values_dict['additional_fields'] = {}
+            a_val = values_dict.get('additional_fields')
+            if isinstance(a_val, dict):
+                a_val.update(remaining_fields)
         
         # Backward compatibility: populate legacy fields from structured data
-        if 'doctor' in values and values['doctor']:
-            if isinstance(values['doctor'], dict):
-                if 'names' in values['doctor'] and values['doctor']['names']:
-                    values['doctor_name'] = values['doctor']['names']
-                elif 'name' in values['doctor'] and values['doctor']['name']:
-                    values['doctor_name'] = [values['doctor']['name']]
+        if 'doctor' in values_dict and values_dict['doctor']:
+            doc_val = values_dict.get('doctor')
+            if isinstance(doc_val, dict):
+                if 'names' in doc_val and doc_val.get('names'):
+                    values_dict['doctor_name'] = doc_val.get('names')
+                elif 'name' in doc_val and doc_val.get('name'):
+                    name_val = doc_val.get('name')
+                    if name_val is not None:
+                        values_dict['doctor_name'] = [name_val]
         
-        if 'hospital' in values and values['hospital']:
-            if isinstance(values['hospital'], dict) and 'name' in values['hospital']:
-                values['hospital_name'] = values['hospital']['name']
+        if 'hospital' in values_dict and values_dict['hospital']:
+            hosp_val = values_dict.get('hospital')
+            if isinstance(hosp_val, dict) and 'name' in hosp_val:
+                values_dict['hospital_name'] = hosp_val.get('name')
         
-        if 'patient' in values and values['patient']:
-            if isinstance(values['patient'], dict) and 'name' in values['patient']:
-                values['patient_name'] = values['patient']['name']
+        if 'patient' in values_dict and values_dict['patient']:
+            pat_val = values_dict.get('patient')
+            if isinstance(pat_val, dict) and 'name' in pat_val:
+                values_dict['patient_name'] = pat_val.get('name')
         
-        return values
+        return values_dict
     
     @field_validator('diagnosis', mode='before')
     @classmethod
-    def normalize_diagnosis(cls, v):
+    def normalize_diagnosis(cls, v: Any) -> Optional[List[str]]:
         """Convert diagnosis to list if it's a string"""
         if isinstance(v, str):
             return [v] if v.strip() else None
@@ -396,7 +415,7 @@ class DynamicPrescriptionExtracted(BaseModel):
     
     @field_validator('date', mode='before')
     @classmethod
-    def clean_date(cls, v):
+    def clean_date(cls, v: Any) -> Optional[str]:
         """Clean placeholder dates"""
         if isinstance(v, str):
             v_upper = v.strip().upper()
@@ -410,15 +429,14 @@ class DynamicPrescriptionExtracted(BaseModel):
 # ============================================================================
 
 class OCRRequest(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    
     prescription_id: Optional[str] = "unknown"
-    image_url: str
+    image_url: str = Field(..., min_length=10, description="URL of the prescription image to process")
     
     # Optional: provide schema hints for better extraction
     expected_fields: Optional[List[str]] = None
     extraction_mode: Optional[str] = "dynamic"  # "dynamic" or "strict"
-
-    class Config:
-        extra = "allow"  # Allow extra fields to prevent 422 errors
 
 
 class OCRResponse(BaseModel):
@@ -435,3 +453,40 @@ class OCRResponse(BaseModel):
 
 # Alias for backward compatibility
 PrescriptionExtracted = DynamicPrescriptionExtracted
+
+# ============================================================================
+# CHAT API MODELS (Explicitly typed for Pyre2)
+# ============================================================================
+
+class ChatRequest(BaseModel):
+    question: str
+    image_base64: Optional[str] = None
+    image_format: str = "jpeg"
+    chat_history: Optional[List[Dict[str, str]]] = None
+    include_context: Optional[bool] = True
+
+class ImageChatRequest(BaseModel):
+    image_base64: str
+    image_format: str
+    chat_history: Optional[List[Any]] = None
+    include_context: Optional[bool] = True
+
+class ChatMetadata(BaseModel):
+    provider_used: Optional[str] = None
+    confidence: Optional[float] = None
+    has_image: Optional[bool] = False
+    processing_time_ms: Optional[float] = None
+
+class ChatResponse(BaseModel):
+    status: str
+    answer: str
+    disclaimer: Optional[str] = None
+    metadata: Optional[ChatMetadata] = None
+    retrieved_context: Optional[str] = None
+    suggestions: Optional[List[str]] = None
+    error_details: Optional[str] = None
+
+class KnowledgeBaseResponse(BaseModel):
+    message: str
+    documents_added: int
+    status: Optional[str] = "success"

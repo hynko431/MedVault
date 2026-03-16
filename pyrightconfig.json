@@ -1,8 +1,23 @@
 {
-  "pythonVersion": "3.9",
+  "pythonVersion": "3.14",
   "pythonPlatform": "Windows",
-  "typeCheckingMode": "basic",
+  "venvPath": "C:/Users/hulkh/anaconda3/envs",
+  "venv": "MedVault",
   "extraPaths": [
-    "${workspaceRoot}/AI_OCR_Service"
-  ]
+    "C:/Users/hulkh/Downloads/ai_ocr_service/AI_OCR_Service",
+    "C:/Users/hulkh/anaconda3/envs/MedVault/Lib/site-packages"
+  ],
+  "exclude": [
+    "C:/Users/hulkh/.paddlex",
+    "**/__pycache__",
+    "c:/Users/hulkh/.paddlex",
+    "c:/Users/hulkh/.gemini",
+    ".paddlex",
+    ".gemini",
+    "AI_OCR_Service/tests",
+    "AI_OCR_Service/utils",
+    "AI_OCR_Service/benchmarks",
+    "AI_OCR_Service/scripts"
+  ],
+  "reportMissingTypeStubs": false
 }

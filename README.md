@@ -32,16 +32,19 @@ MedVault transforms handwritten and printed medical prescriptions into structure
 ### Core Capabilities
 
 ✅ **Intelligent OCR Pipeline**
+
 - Multi-stage text extraction and cleaning
 - Handles handwritten and printed prescriptions
 - OCR error correction and normalization
 
 ✅ **AI-Powered Extraction**
+
 - Structured data extraction (doctor, hospital, medicines, diagnosis)
 - Multi-provider fallback chain: Anthropic → OpenRouter → Groq
 - Automatic JSON validation with Pydantic
 
 ✅ **Advanced Search**
+
 - Elasticsearch-powered full-text search
 - Multi-layer relevance tuning (exact match > prefix > fuzzy)
 - Field-level boosting (medicine > doctor > hospital)
@@ -49,11 +52,13 @@ MedVault transforms handwritten and printed medical prescriptions into structure
 - Safe fuzzy matching for typo tolerance
 
 ✅ **Medicine Chat Assistant**
+
 - AI-powered medicine information chatbot
 - Same fallback mechanism as OCR extraction
 - Medical disclaimer for safety
 
 ✅ **Production-Ready**
+
 - Async background indexing
 - Comprehensive error handling
 - Structured logging
@@ -170,33 +175,41 @@ Each service is self-contained and independently deployable.
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/hynko431/MedVault.git
    cd MedVault
    ```
 
 2. **Navigate to the service**
+
    ```bash
+   C:/Users/hulkh/anaconda3/Scripts/activate
+   conda activate MedVault
    cd AI_OCR_Service
    ```
 
 3. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Configure environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your API keys
    ```
 
 5. **Start the server**
+
    ```bash
    python -m uvicorn app.main:app --reload
    ```
 
 6. **Verify installation**
+
    ```bash
    curl http://localhost:8000/health
    ```
@@ -212,6 +225,7 @@ Each service is self-contained and independently deployable.
 Extract structured data from prescription images.
 
 **Request:**
+
 ```json
 {
   "prescription_id": "rx_12345",
@@ -220,6 +234,7 @@ Extract structured data from prescription images.
 ```
 
 **Response:**
+
 ```json
 {
   "prescription_id": "rx_12345",
@@ -251,6 +266,7 @@ Extract structured data from prescription images.
 Universal search with multi-layer relevance.
 
 **Parameters:**
+
 - `q` (required): Search query
 - `user_id` (required): User ID for filtering
 - `page`: Page number (default: 1)
@@ -258,6 +274,7 @@ Universal search with multi-layer relevance.
 - `sort_by`: Sort order (`relevance` or `date`)
 
 **Example:**
+
 ```bash
 GET /search/all?q=paracetamol&user_id=user123&page=1&sort_by=relevance
 ```
@@ -267,6 +284,7 @@ GET /search/all?q=paracetamol&user_id=user123&page=1&sort_by=relevance
 Fast autocomplete search with exact match priority.
 
 **Example:**
+
 ```bash
 GET /search/autocomplete?q=para&user_id=user123&size=10
 ```
@@ -278,6 +296,7 @@ GET /search/autocomplete?q=para&user_id=user123&size=10
 Ask medicine-related questions to AI assistant.
 
 **Request:**
+
 ```json
 {
   "question": "What is paracetamol used for?"
@@ -285,6 +304,7 @@ Ask medicine-related questions to AI assistant.
 ```
 
 **Response:**
+
 ```json
 {
   "answer": "Paracetamol is a common pain reliever and fever reducer...",
@@ -300,6 +320,7 @@ Ask medicine-related questions to AI assistant.
 Service health and configuration status.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -399,11 +420,13 @@ Groq (Fallback 2)
 ### Manual Testing
 
 1. **Test Health Endpoint**
+
    ```bash
    curl http://localhost:8000/health
    ```
 
 2. **Test OCR Extraction**
+
    ```bash
    curl -X POST "http://localhost:8000/ocr/extract" \
      -H "Content-Type: application/json" \
@@ -414,6 +437,7 @@ Groq (Fallback 2)
    ```
 
 3. **Test Medicine Chat**
+
    ```bash
    curl -X POST "http://localhost:8000/chat/medicine-chat" \
      -H "Content-Type: application/json" \
@@ -423,6 +447,7 @@ Groq (Fallback 2)
 ### Interactive Testing
 
 Open Swagger UI for interactive API testing:
+
 ```
 http://localhost:8000/docs
 ```
@@ -466,6 +491,7 @@ http://localhost:8000/docs
 **Issue:** 502 Bad Gateway on OCR endpoint
 
 **Solution:** Verify Google Cloud credentials are properly configured
+
 ```bash
 python -c "import os; print(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))"
 ```
@@ -475,6 +501,7 @@ python -c "import os; print(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))"
 **Issue:** 503 Service Unavailable on chat endpoint
 
 **Solution:** Ensure at least one AI provider API key is configured
+
 ```bash
 curl http://localhost:8000/health
 # Check providers.*.enabled fields
@@ -485,6 +512,7 @@ curl http://localhost:8000/health
 **Issue:** Elasticsearch not indexing
 
 **Solution:** Verify Elasticsearch is running and accessible
+
 ```bash
 curl http://localhost:9200/_cluster/health
 ```
@@ -494,7 +522,8 @@ curl http://localhost:9200/_cluster/health
 ## 📞 Support
 
 For issues and feature requests:
-- GitHub Issues: https://github.com/hynko431/MedVault/issues
+
+- GitHub Issues: <https://github.com/hynko431/MedVault/issues>
 - Documentation: See `/AI_OCR_Service/*.md` files
 
 ---
