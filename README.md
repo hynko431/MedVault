@@ -66,5 +66,5 @@ graph TD
 
 ## 📄 License & Author
 
-**Author**: Akash & Asarit Technologies
+**Author**: Irakam Siva Venkata Bhanu Prakash, Mandali Akash, Gujjala Pranay Kumar & Asarit Technologies
 **Version**: 0.2
