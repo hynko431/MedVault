@@ -10,7 +10,7 @@ This backend handles authentication, family member management, prescription uplo
 
 * Node.js
 * Express.js
-* MongoDB
+* PostgreSQL
 * JWT Authentication
 * AWS S3 (for prescription uploads)
 * Node-Cron (for reminders)
@@ -20,7 +20,7 @@ This backend handles authentication, family member management, prescription uplo
 
 ## Project Structure
 
-```
+```text
 src
 │
 ├── config
@@ -52,19 +52,19 @@ src
 
 Clone the repository:
 
-```
+```bash
 git clone https://github.com/asarittechnologies/MedVault.git
 ```
 
 Go to backend folder:
 
-```
+```bash
 cd medvault-backend
 ```
 
 Install dependencies:
 
-```
+```bash
 npm install
 ```
 
@@ -76,13 +76,14 @@ Create a `.env` file in the root directory.
 
 Example:
 
-```
+```bash
 PORT=5000
-MONGO_URI=your_mongodb_connection
+DATABASE_URL=your_postgresql_connection_string
 JWT_SECRET=your_secret_key
 AWS_ACCESS_KEY=your_access_key
 AWS_SECRET_KEY=your_secret_key
 AWS_BUCKET_NAME=your_bucket
+AI_OCR_SERVICE_URL=http://ai_ocr_service:8000
 ```
 
 ---
@@ -91,19 +92,19 @@ AWS_BUCKET_NAME=your_bucket
 
 Development mode:
 
-```
+```bash
 npm run dev
 ```
 
 Production mode:
 
-```
+```bash
 node src/server.js
 ```
 
 Server will run at:
 
-```
+```text
 http://localhost:5000
 ```
 
@@ -113,13 +114,13 @@ http://localhost:5000
 
 Test if backend is running:
 
-```
+```text
 GET /
 ```
 
 Response:
 
-```
+```json
 {
   "message": "MedVault backend is running"
 }
@@ -127,13 +128,13 @@ Response:
 
 Test endpoint:
 
-```
+```text
 GET /api/test
 ```
 
 Response:
 
-```
+```json
 {
   "message": "Backend API working correctly"
 }
@@ -145,37 +146,37 @@ Response:
 
 ### Authentication
 
-```
+```text
 /api/auth
 ```
 
 ### Family Members
 
-```
+```text
 /api/family
 ```
 
 ### Prescription Upload
 
-```
+```text
 /api/prescriptions
 ```
 
 ### Reminders
 
-```
+```text
 /api/reminders
 ```
 
 ### Notifications
 
-```
+```text
 /api/notifications
 ```
 
 ### File Upload (S3)
 
-```
+```text
 /api/s3
 ```
 
@@ -185,7 +186,7 @@ Response:
 
 * Secure user authentication
 * Family member management
-* Prescription storage
+* Prescription storage (PostgreSQL metadata)
 * Medicine reminders
 * Notification system
 * Secure file uploads to AWS S3
@@ -196,7 +197,7 @@ Response:
 
 Reminder notifications are handled using **node-cron**.
 
-```
+```javascript
 src/cron/reminder.cron.js
 ```
 
