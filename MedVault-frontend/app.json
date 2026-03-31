@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "MedVault",
+    "slug": "medvault",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./app/assets/logo.png",
+    "scheme": "medvault",
+    "userInterfaceStyle": "light",
+
+    "splash": {
+      "image": "./app/assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+
+    "android": {
+      "package": "com.medvault.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./app/assets/logo.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+
+    "ios": {
+      "bundleIdentifier": "com.medvault.app"
+    },
+
+    "web": {
+      "favicon": "./app/assets/logo.png"
+    },
+
+    "platforms": ["android", "ios", "web"],
+    "assetBundlePatterns": ["**/*"]
+  }
+}

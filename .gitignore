@@ -1,0 +1,28 @@
+# Root .gitignore for MedVault
+
+# Logs
+*.log
+logs/
+*.out
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node
+node_modules/
+package-lock.json (if desired)
+
+# Credentials
+google-credentials.json
+
+# Local envs
+.env
+.env.*
+!.env.example
+
+# OS Files
+.DS_Store
+Thumbs.db

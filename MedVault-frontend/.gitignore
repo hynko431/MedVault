@@ -1,0 +1,55 @@
+# Dependencies
+
+node_modules/
+
+# Expo
+
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build folders
+
+/ios
+/android
+
+# Kotlin
+
+.kotlin/
+
+# Certificates / Keys
+
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Metro bundler
+
+.metro-health-check*
+
+# Debug logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# macOS files
+
+.DS_Store
+
+# Local environment files
+
+.env
+.env*.local
+
+# Typescript
+
+*.tsbuildinfo
+
+# Example app folder
+
+app-example/
